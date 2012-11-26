@@ -1,7 +1,12 @@
 Require Import ssreflect ssrbool eqtype ssrnat.
 
+Module DeBruijnTerms.
+
 Section Declaration.
-Variable DBT : Set.
 
-Hypothesis DBT_variables : nat -> DBT.
+Inductive DBT :=
+| Var (x:nat) : DBT
+| Fun (x:nat) (t:DBT) : DBT
+| Appl (t:DBT) (u:nat) : DBT.
 
+End DeBruijnTerms.
