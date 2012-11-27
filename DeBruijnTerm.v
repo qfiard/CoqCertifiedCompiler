@@ -7,8 +7,8 @@ Section Declaration.
 
 Inductive DBT :=
 | Var (x:nat) : DBT
-| Fun (x:nat) (t:DBT) : DBT
-| Appl (t:DBT) (u:nat) : DBT.
+| Fun (t:DBT) : DBT
+| Appl (t:DBT) (u:DBT) : DBT.
 
 (* This lemma is required for the definition of natural integer sets *)
 Lemma nat_unicity : forall x y:nat, {x = y} + {x <> y}.
@@ -20,8 +20,9 @@ Proof.
   left.
   done.
   right.
-
-  (* to be continued *)
+  move:h.
+  move/eqP.
+  done.
 Qed.
 
 Definition free_variables (t:DBT) : set nat.
@@ -32,11 +33,25 @@ Proof.
   move/(_ nat):empty_set => s.
   move:set_add => h.
   move/(_ nat):h => h.
-  apply:(x::s).
+  apply:h.
+  move:nat_unicity => h.
+  done.
+  done.
+  done.
   
   (* Cas d'une fonction *)
-
+  move => t free_t.
+  move:set_remove => h.
+  move/(_ nat):h => h.
+  apply:h.
+  move:nat_unicity => h.
+  done.
+  apply:0.
+  done.
+  done.
 Defined.
+
+
 
 Fixpoint closed (t:DBT) : Prop := 
   match t with
