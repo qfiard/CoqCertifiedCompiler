@@ -111,45 +111,36 @@ Proof.
   by case:h => h.
 Defined.
 
-Fixpoint n_free (n:nat) (t:DBT) : Prop.
+Definition n_free (t:DBT) : { f:nat -> Prop | forall n:nat, forall t:DBT, f n -> f (n+1) }.
 Proof.
   move:n_k_free => h.
-  
-  apply:h.
-  apply:0.
-  apply:t.
-  apply:n.
+  case:h.
+  done.
+  move => n_k_free.
+  rewrite/heredity_n_k.
+  move => p.
+  exists (fun n => (n_k_free n 0)).
+
+  move => n.
+  move/(_ n 0):p => p.
+  done.
 Defined.
 
-Lemma n_k_free_heredity : forall n k:nat, forall t:DBT, n_k_free n t k -> n_k_free (n+1) t k.
+Fixpoint closed (t:DBT) : Prop.
 Proof.
-  move => n k t.
-  elim:t.
+  move:n_free => h.
+  case:h.
+  done.
+  move => n p.
+  apply:n 0.
+Defined.
 
-  (* Variable *)
-  move => x.
-  rewrite/n_k_free.
+Definition t1:DBT := Var 0.
+Definition t2:DBT := Fun (Var 0).
+Definition t3:DBT := Fun (Var 1).
 
-  move => h.
-  elim:t.
-Qed.
-
-Lemma n_free_heredity : forall n:nat, forall t:DBT, n_free n t -> n_free (n+1) t.
-Proof.
-  move => n t h.
-  rewrite/n_free.
-  simpl.
-  elim.
-  
-
-Qed.
-
-
-
-Fixpoint closed (t:DBT) : Prop := 
-  match t with
-    | Var x => false
-    | Fun x t => false
-    | 
+Compute closed t1.
+Compute closed t2.
+Compute closed t3.
 
 End DeBruijnTerms.
