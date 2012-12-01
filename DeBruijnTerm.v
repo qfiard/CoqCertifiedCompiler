@@ -5,10 +5,10 @@ Module DeBruijnTerms.
 
 Section Declaration.
 
-Inductive DBT :=
-| Var (x:nat) : DBT
-| Fun (t:DBT) : DBT
-| Appl (t:DBT) (u:DBT) : DBT.
+Inductive DBT:Type :=
+| Var : nat -> DBT
+| Fun : DBT -> DBT
+| Appl : DBT -> DBT -> DBT.
 
 (* This lemma is required for the definition of natural integer sets *)
 Lemma nat_unicity : forall x y:nat, {x = y} + {x <> y}.
@@ -142,5 +142,78 @@ Definition t3:DBT := Fun (Var 1).
 Compute closed t1.
 Compute closed t2.
 Compute closed t3.
+
+Definition is_function (f:DBT) : Prop :=
+  match f with
+    | Fun t => true
+    | _ => false
+  end.
+
+Theorem is_function_eq : forall f, is_function f <-> exists x, f = Fun x.
+Proof.
+  split.
+  case:f.
+  rewrite/is_function.
+  done.
+  move => d p.
+  exists d.
+  done.
+  rewrite/is_function.
+  done.
+
+  move => p.
+  elim:p.
+  move => x h.
+  rewrite h.
+  rewrite/is_function.
+  done.
+Qed.
+
+Definition function_arg (f:DBT) : DBT :=
+  match f with
+    | Fun t => t
+    | _ => f
+  end.
+
+Definition substitution : {f:DBT | is_function f} -> DBT -> DBT.
+Proof.
+  move => f.
+  move => u.
+  case:f => f.
+  move => p.
+  move/(_ f):function_arg => t.
+  move/(_ f):is_function_eq => h.
+  case:h => h1 h2.
+  have x_def:exists x:DBT, f=Fun x.
+  apply:h1.
+  done.
+  elim:x_def.
+  move:sigT => h.
+  have p2 : exists x, f = Fun x.
+  done.
+  rewrite/is_function:p.
+  case:f.
+  done.
+  move => f.
+  move => p.
+  
+  m
+  move => f t.
+  case:f => f p.
+  have x:DBT.
+  .
+  
+  move:p.
+  case:p.
+  rewrite p.
+  eapply ex_intro.
+
+  done.
+  have x:DBT.
+  exists (Fun x).
+  
+
+Defined.
+
 
 End DeBruijnTerms.
