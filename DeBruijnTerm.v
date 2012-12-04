@@ -175,6 +175,22 @@ Definition function_arg (f:DBT) : DBT :=
     | _ => f
   end.
 
+Definition free_le (f:DBT) : nat ->Prop.
+Proof.
+  elim:f.
+  move=>m n.
+  apply : (m<n).
+  move=>t hr n.
+  apply : (hr (n+1)).
+  move=>t1 hr1 t2 hr2 n.
+  have b:Prop.
+  apply : (hr1 n).
+  have c:Prop.
+  apply (hr2 n).
+  apply : (b/\c).
+Qed.
+
+
 Lemma leq_or_geq: forall x y:nat, {x<=y}+{y<x}.
 Proof.
   move => x y.
