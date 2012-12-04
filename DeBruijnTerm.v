@@ -225,7 +225,13 @@ Compute (add_n_to_free t3 10).
 
 Compute (leq_or_geq 1 0).
 
-Definition replace : DBT -> nat -> DBT -> DBT.
+Definition shift : DBT -> DBT.
+Proof.
+  move => t.
+  apply:add_n_to_free t 1.
+Defined.
+
+Definition subsitute_one : DBT -> nat -> DBT -> DBT.
 Proof.
   move => t.
   
@@ -235,12 +241,12 @@ Proof.
   move => x n u.
   move/(_ n x):nat_unicity => h.
   case:h => h.
-  apply: add_n_to_free u n.
+  apply:u.
   apply:(Var x).
 
   (* Function Fun t1*)
   move => t1 ih n u.
-  apply:(Fun(ih (n+1) u)).
+  apply:(Fun(ih (n+1) (shift u))).
   
 
   (* Application Appl t1 t2*)
@@ -248,7 +254,24 @@ Proof.
   apply:(Appl (ih1 n u) (ih2 n u)).
 Defined.
 
+Definition sustitute : DBT -> list (nat*DBT) -> DBT.
+Proof.
+  move => t l.
+  elim:l.
 
+  (* Empty list *)
+  apply:t.
+
+  (* Hérédité l = pair::s *)
+
+  move => pair s ih.
+
+  case:pair => i ui.
+  apply:if n_free ih
+  
+
+  move => l.
+Defined.
 
 (* La définition suivante ne tient pas compte des variables libres de u, il faut encore la modifier *)
 
