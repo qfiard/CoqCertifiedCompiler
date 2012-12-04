@@ -1,4 +1,4 @@
-Require Import ssreflect ssrbool eqtype ssrnat.
+Require Import ssreflect ssrbool eqtype ssrnat Arith.
 Require Import ListSet.
 
 Module DeBruijnTerms.
@@ -175,6 +175,56 @@ Definition function_arg (f:DBT) : DBT :=
     | _ => f
   end.
 
+Lemma leq_or_geq: forall x y:nat, {x<=y}+{y<x}.
+Proof.
+  move => x y.
+  move/(_ x y): le_lt_dec.
+  move => h.
+  case:h.
+  move/leP => h.
+  left.
+  done.
+
+  move/leP => h.
+  right.
+  done.
+Qed.
+
+(* add_n_to_free_k t n k  adds a constant value n to all free variables >= k in t *)
+Definition add_n_to_free_k : DBT -> nat -> nat -> DBT.
+Proof.
+  move => t.
+  elim:t.
+
+  (* Variable *)
+  move => x n k.
+  move/(_ k x):leq_or_geq => h1.
+  case:h1 => h1.
+  apply: Var(x+n).
+  apply: Var(x).
+
+
+  (* Fonction Fun t*)
+  move => t ih n k.
+  apply: Fun (ih n (k+1)).
+
+  (* Application Appl t1 t2 *)
+  move => t1 ih1 t2 ih2 n k.
+  apply: Appl (ih1 n k) (ih2 n k).
+Defined.
+
+(* add_n_to_free adds a constant value n to all the free variables of the argument DBT *)
+Definition add_n_to_free : DBT -> nat -> DBT.
+Proof.
+  move => t n.
+  apply:add_n_to_free_k t n 0.
+Defined.
+
+Compute (add_n_to_free t2 10).
+Compute (add_n_to_free t3 10).
+
+Compute (leq_or_geq 1 0).
+
 Definition replace : DBT -> nat -> DBT -> DBT.
 Proof.
   move => t.
@@ -185,7 +235,7 @@ Proof.
   move => x n u.
   move/(_ n x):nat_unicity => h.
   case:h => h.
-  apply:u.
+  apply: add_n_to_free u n.
   apply:(Var x).
 
   (* Function Fun t1*)
@@ -198,69 +248,7 @@ Proof.
   apply:(Appl (ih1 n u) (ih2 n u)).
 Defined.
 
-Lemma leq_or_geq: forall x y:nat, {x<y}+{x>=y}.
-Proof.
-  move => x y.
-  move/(_ x y):leqP.
-  unfold leq_xor_gtn.
 
-
-  move/(_ x y):nat_unicity => h1.
-  case:h1 => h1.
-  right.
-  rewrite h1.
-  done.
-
-  move/(_ y x):leq_total.
-  move/orP.
-  move => h2.
-  case:h2 => h2.
-  right.
-  done.
-
-  left.
-  move/(_ x y):ltn_neqAle => h3.
-  rewrite h3.
-  rewrite/andb.
-  have h4:x!=y.
-  move:h1.
-  move/eqP.
-  done.
-
-  rewrite h4.
-  done.
-Qed.
-
-(* add_n_to_free_k t n k  adds a constant value n to all free variables >= k in t *)
-Definition add_n_to_free_k : DBT -> nat -> nat -> DBT.
-Proof.
-  move => t.
-  elim:t.
-
-  (* Variable *)
-  move => x n k.
-  move/(_ x k):leq_or_geq => h1.
-  case:h1 => h1.
-
-  
-
-  have h:(x<k)\/(x>=k).
-  move/(_ x k):leq_total => h1.
-  move/(_ k x):nat_unicity => h2.
-  case:h2 => h2.
-  right.
-  move/(_ k x):eq_leq => h3.
-  apply:h3.
-  done.
-  left.
-Defined.
-
-(* add_n_to_free adds a constant value n to all the free variables of the argument DBT *)
-Definition add_n_to_free : DBT -> nat -> DBT.
-Proof.
-  move => t.
-  
-Defined.
 
 (* La définition suivante ne tient pas compte des variables libres de u, il faut encore la modifier *)
 
@@ -277,5 +265,26 @@ Proof.
   apply:h.
 Defined.
 
+Definition t2f : {f:DBT | is_function f}.
+Proof.
+  exists t2.
+  done.
+Defined.
+
+Compute (substitution t2f t1).
+
+Definition element: {f:DBT | is_function f} -> DBT.
+Proof.
+  move => f.
+  case:f => f p.
+  apply:f.
+Defined.
+
+Theorem substitute_in_closed : forall f:{f:DBT | is_function f}, forall u:DBT, closed (element f) ->  substitution f u = (element f).
+Proof.
+  move => f u.
+  rewrite/element.
+
+Qed.
 
 End DeBruijnTerms.
