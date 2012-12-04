@@ -175,44 +175,106 @@ Definition function_arg (f:DBT) : DBT :=
     | _ => f
   end.
 
+Definition replace : DBT -> nat -> DBT -> DBT.
+Proof.
+  move => t.
+  
+  elim:t.
+
+  (* Variable *)
+  move => x n u.
+  move/(_ n x):nat_unicity => h.
+  case:h => h.
+  apply:u.
+  apply:(Var x).
+
+  (* Function Fun t1*)
+  move => t1 ih n u.
+  apply:(Fun(ih (n+1) u)).
+  
+
+  (* Application Appl t1 t2*)
+  move => t1 ih1 t2 ih2 n u.
+  apply:(Appl (ih1 n u) (ih2 n u)).
+Defined.
+
+Lemma leq_or_geq: forall x y:nat, {x<y}+{x>=y}.
+Proof.
+  move => x y.
+  move/(_ x y):leqP.
+  unfold leq_xor_gtn.
+
+
+  move/(_ x y):nat_unicity => h1.
+  case:h1 => h1.
+  right.
+  rewrite h1.
+  done.
+
+  move/(_ y x):leq_total.
+  move/orP.
+  move => h2.
+  case:h2 => h2.
+  right.
+  done.
+
+  left.
+  move/(_ x y):ltn_neqAle => h3.
+  rewrite h3.
+  rewrite/andb.
+  have h4:x!=y.
+  move:h1.
+  move/eqP.
+  done.
+
+  rewrite h4.
+  done.
+Qed.
+
+(* add_n_to_free_k t n k  adds a constant value n to all free variables >= k in t *)
+Definition add_n_to_free_k : DBT -> nat -> nat -> DBT.
+Proof.
+  move => t.
+  elim:t.
+
+  (* Variable *)
+  move => x n k.
+  move/(_ x k):leq_or_geq => h1.
+  case:h1 => h1.
+
+  
+
+  have h:(x<k)\/(x>=k).
+  move/(_ x k):leq_total => h1.
+  move/(_ k x):nat_unicity => h2.
+  case:h2 => h2.
+  right.
+  move/(_ k x):eq_leq => h3.
+  apply:h3.
+  done.
+  left.
+Defined.
+
+(* add_n_to_free adds a constant value n to all the free variables of the argument DBT *)
+Definition add_n_to_free : DBT -> nat -> DBT.
+Proof.
+  move => t.
+  
+Defined.
+
+(* La définition suivante ne tient pas compte des variables libres de u, il faut encore la modifier *)
+
 Definition substitution : {f:DBT | is_function f} -> DBT -> DBT.
 Proof.
+  (* f=Fun t, calcul de (Fun t) u *)
   move => f.
   move => u.
   case:f => f.
   move => p.
   move/(_ f):function_arg => t.
-  move/(_ f):is_function_eq => h.
-  case:h => h1 h2.
-  have x_def:exists x:DBT, f=Fun x.
-  apply:h1.
-  done.
-  elim:x_def.
-  move:sigT => h.
-  have p2 : exists x, f = Fun x.
-  done.
-  rewrite/is_function:p.
-  case:f.
-  done.
-  move => f.
-  move => p.
-  
-  m
-  move => f t.
-  case:f => f p.
-  have x:DBT.
-  .
-  
-  move:p.
-  case:p.
-  rewrite p.
-  eapply ex_intro.
 
-  done.
-  have x:DBT.
-  exists (Fun x).
-  
-
+  move/(_ t 0 u):replace => h.
+  apply:h.
 Defined.
 
 
