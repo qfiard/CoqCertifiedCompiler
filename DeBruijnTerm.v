@@ -247,7 +247,7 @@ Proof.
   apply:add_n_to_free t 1.
 Defined.
 
-Definition subsitute_one : DBT -> nat -> DBT -> DBT.
+Definition substitute_one : DBT -> nat -> DBT -> DBT.
 Proof.
   move => t.
   
@@ -271,6 +271,8 @@ Proof.
 Defined.
 
 Definition sustitute : DBT -> list (nat*DBT) -> DBT.
+Admitted.
+(*
 Proof.
   move => t l.
   elim:l.
@@ -283,15 +285,18 @@ Proof.
   move => pair s ih.
 
   case:pair => i ui.
+
   apply:if n_free ih
   
 
   move => l.
-Defined.
+Defined.*)
 
 (* La définition suivante ne tient pas compte des variables libres de u, il faut encore la modifier *)
 
 Definition substitution : {f:DBT | is_function f} -> DBT -> DBT.
+Admitted.
+(*
 Proof.
   (* f=Fun t, calcul de (Fun t) u *)
   move => f.
@@ -302,7 +307,7 @@ Proof.
 
   move/(_ t 0 u):replace => h.
   apply:h.
-Defined.
+Defined.*)
 
 Definition t2f : {f:DBT | is_function f}.
 Proof.
@@ -320,10 +325,72 @@ Proof.
 Defined.
 
 Theorem substitute_in_closed : forall f:{f:DBT | is_function f}, forall u:DBT, closed (element f) ->  substitution f u = (element f).
+Admitted.
+(*
 Proof.
   move => f u.
   rewrite/element.
 
 Qed.
 
-End DeBruijnTerms.
+End DeBruijnTerms.*)
+
+
+(*
+Fixpoint equals (a:DBT) (b:DBT) : Prop :=
+match a,b with
+|_, _ => False
+end.
+  move=> a b.
+  elim a.
+  elim b.
+
+Defined.*)
+
+Inductive reduces_in_one_step : DBT -> DBT -> Prop :=
+| Lambda_reduction : forall t u, reduces_in_one_step (Appl (Fun t) u) (substitute_one t 0 u)
+| Rep_Lambda : forall t u, reduces_in_one_step t u ->reduces_in_one_step (Fun t) (Fun u)
+| Rep_Appl_left : forall t u v, reduces_in_one_step t u ->reduces_in_one_step (Appl t v) (Appl u v)
+| Rep_Appl_right : forall t u v, reduces_in_one_step t u ->reduces_in_one_step (Appl v t) (Appl v u).
+
+Inductive reduces_in_few_steps : DBT -> DBT -> Prop :=
+| Reflexivity : forall t, reduces_in_few_steps t t
+| Forward : forall t u v, reduces_in_few_steps t u -> reduces_in_one_step u v->reduces_in_few_steps t v.
+
+Lemma context_closed_left: forall t u: DBT, reduces_in_few_steps t u -> forall v:DBT, reduces_in_few_steps (Appl t v) (Appl u v).
+Proof.
+  move => t u.
+  elim.
+  by move=>t0 v;apply Reflexivity.
+  move=> {t u} t u v0 h0 h1 h2 v.
+  have h3:reduces_in_one_step (Appl u v) (Appl v0 v).
+  by apply Rep_Appl_left.
+  move/(_ v):h1=>h1.
+  move:h1 h3.
+  by apply Forward.
+Qed.
+
+Lemma context_closed_right: forall t u: DBT, reduces_in_few_steps t u -> forall v:DBT, reduces_in_few_steps (Appl v t) (Appl v u).
+Proof.
+  move => t u.
+  elim.
+  by move=>t0 v;apply Reflexivity.
+  move=> {t u} t u v0 h0 h1 h2 v.
+  have h3:reduces_in_one_step (Appl v u) (Appl v v0).
+  by apply Rep_Appl_right.
+  move/(_ v):h1=>h1.
+  move:h1 h3.
+  by apply Forward.
+Qed.
+
+Lemma context_closed_Lambda: forall t u: DBT, reduces_in_few_steps t u -> reduces_in_few_steps (Fun t) (Fun u).
+Proof.
+  move => t u.
+  elim.
+  by move=>t0;apply Reflexivity.
+  move=> {t u} t u u0 h0 h1 h2.
+  have h3:reduces_in_one_step (Fun u) (Fun u0).
+  by apply Rep_Lambda.
+  move:h1 h3.
+  by apply Forward.
+Qed.
