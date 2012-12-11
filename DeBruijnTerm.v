@@ -1,5 +1,5 @@
 Require Import ssreflect ssrbool eqtype ssrnat Arith.
-Require Import ListSet.
+Require Import List ListSet.
 
 Module DeBruijnTerms.
 
@@ -9,23 +9,6 @@ Inductive DBT:Type :=
 | Var : nat -> DBT
 | Fun : DBT -> DBT
 | Appl : DBT -> DBT -> DBT.
-
-(* This lemma is required for the definition of natural integer sets *)
-Lemma nat_unicity : forall x y:nat, {x = y} + {x <> y}.
-Proof.
-  move/(_ nat_eqType):eqVneq=> h.
-  move => x y.
-  move/(_ x y):h => h.
-  case:h => h.
-  left.
-  done.
-  right.
-  move:h.
-  move/eqP.
-  done.
-Qed.
-
-(* Definition set_substract_one (s:set nat) : set nat. *)
 
 (*
 Definition 
@@ -62,23 +45,32 @@ Defined.
 
 Definition heredity_n_k (f:nat -> nat -> Prop) : Prop := forall n k:nat, f n k -> f (n+1) k.
 
-Lemma stupid : forall x y:nat, x<y -> x<y+1.
-Admitted.
+Lemma lt_succ : forall x y:nat, x<y -> x<y+1.
+Proof.
+  move => x y.
+  move/(_ x y 1):ltn_addr.
+  done.
+Qed.
 
-Definition n_k_free (t:DBT) : { f:(nat->nat->Prop) | heredity_n_k f}.
+Definition n_k_free (t:DBT) : { f:(nat->nat->bool) | heredity_n_k f}.
 Proof.
   elim:t.
 
   (* Variable *)
   move => x.
-  exists (fun n:nat => (fun k:nat => ((x<k)\/(x<n)))).
+  exists (fun n:nat => (fun k:nat => ((x<k)||(x<n)))).
   rewrite/heredity_n_k.
-  move => n k h.
-  case:h => h.
-  by left.
-  right.
-  move/(_ x n):stupid => h1.
+  move => n k.
+  move/orP.
+  case.
+  move => -> //=.
+  move => h.
+  have h2:x<n+1.
+  move/(_ x n):lt_succ => h1.
   apply:h1.
+  done.
+  move:h2 => ->.
+  rewrite orbT.
   done.
 
   (* Fonction *)
@@ -97,21 +89,33 @@ Proof.
   case:iht => ft pt.
   case:ihu => fu pu.
 
-  exists (fun n => (fun k => ((ft n k)/\(fu n k)))).
+  exists (fun n => (fun k => ((ft n k)||(fu n k)))).
 
   move:pt pu.
   rewrite/heredity_n_k.
   move => iht ihu n k h.
   move/(_ n k): iht => iht.
   move/(_ n k): ihu => ihu.
-  split.
+
+  move/orP:h => h.
+
+  case:h => h.
+
+  have h1: ft (n+1) k.
   apply:iht.
-  by case:h => h.
-  apply:ihu.
-  by case:h => h.
+  done.
+
+  move:h1 => -> //=.
+
+  have h1 : fu (n+1) k.
+  apply:ihu => //.
+
+  move:h1 => ->.
+  rewrite orbT.
+  done.
 Defined.
 
-Definition n_free (t:DBT) : { f:nat -> Prop | forall n:nat, forall t:DBT, f n -> f (n+1) }.
+Definition n_free (t:DBT) : { f:nat -> bool | forall n:nat, forall t:DBT, f n -> f (n+1) }.
 Proof.
   move:n_k_free => h.
   case:h.
@@ -126,7 +130,7 @@ Proof.
   done.
 Defined.
 
-Fixpoint closed (t:DBT) : Prop.
+Fixpoint closed (t:DBT) : bool.
 Proof.
   move:n_free => h.
   case:h.
@@ -143,7 +147,7 @@ Compute closed t1.
 Compute closed t2.
 Compute closed t3.
 
-Definition is_function (f:DBT) : Prop :=
+Definition is_function (f:DBT) : bool :=
   match f with
     | Fun t => true
     | _ => false
@@ -175,7 +179,7 @@ Definition function_arg (f:DBT) : DBT :=
     | _ => f
   end.
 
-Definition free_le (f:DBT) : nat ->Prop.
+Definition free_le (f:DBT) : nat -> bool.
 Proof.
   elim:f.
   move=>m n.
@@ -183,27 +187,11 @@ Proof.
   move=>t hr n.
   apply : (hr (n+1)).
   move=>t1 hr1 t2 hr2 n.
-  have b:Prop.
+  have b:bool.
   apply : (hr1 n).
-  have c:Prop.
-  apply (hr2 n).
-  apply : (b/\c).
-Qed.
-
-
-Lemma leq_or_geq: forall x y:nat, {x<=y}+{y<x}.
-Proof.
-  move => x y.
-  move/(_ x y): le_lt_dec.
-  move => h.
-  case:h.
-  move/leP => h.
-  left.
-  done.
-
-  move/leP => h.
-  right.
-  done.
+  have c:bool.
+  apply : (hr2 n).
+  apply : (b && c).
 Qed.
 
 (* add_n_to_free_k t n k  adds a constant value n to all free variables >= k in t *)
@@ -214,10 +202,7 @@ Proof.
 
   (* Variable *)
   move => x n k.
-  move/(_ k x):leq_or_geq => h1.
-  case:h1 => h1.
-  apply: Var(x+n).
-  apply: Var(x).
+  apply:(if (k<=x) then (Var (x+n)) else Var (x)).
 
 
   (* Fonction Fun t*)
@@ -239,15 +224,15 @@ Defined.
 Compute (add_n_to_free t2 10).
 Compute (add_n_to_free t3 10).
 
-Compute (leq_or_geq 1 0).
-
 Definition shift : DBT -> DBT.
 Proof.
   move => t.
   apply:add_n_to_free t 1.
 Defined.
 
-Definition subsitute_one : DBT -> nat -> DBT -> DBT.
+Compute (shift t3).
+
+Definition substitute_one : DBT -> nat -> DBT -> DBT.
 Proof.
   move => t.
   
@@ -255,10 +240,7 @@ Proof.
 
   (* Variable *)
   move => x n u.
-  move/(_ n x):nat_unicity => h.
-  case:h => h.
-  apply:u.
-  apply:(Var x).
+  apply:(if (n==x) then u else (Var x)).
 
   (* Function Fun t1*)
   move => t1 ih n u.
@@ -270,7 +252,44 @@ Proof.
   apply:(Appl (ih1 n u) (ih2 n u)).
 Defined.
 
-Definition sustitute : DBT -> list (nat*DBT) -> DBT.
+Theorem substitute_in_closed : forall f:{f:DBT | is_function f}, forall u:DBT, closed (element f) ->  substitution f u = (element f).
+Proof.
+  move => f u.
+  rewrite/element.
+Qed.
+
+Definition n_free_list : list DBT -> nat -> bool.
+Proof.
+  move => l n.
+  elim:l.
+  apply:true.
+  
+  move => t s ih.
+  
+  have test:bool.
+
+  move/(_ t):n_free => h.
+  case:h => f _.
+  apply:f.
+  apply:n.
+
+  apply:(test&&ih).
+Defined.
+
+Definition list_from_list_of_pairs : list (nat*DBT) -> list DBT.
+Proof.
+  move => l.
+
+  elim:l.
+
+  apply:nil.
+
+  move => pair s ih.
+  case:pair => n t.
+  apply:(t::ih).
+Defined.
+
+Definition substitute : DBT -> list (nat*DBT) -> DBT.
 Proof.
   move => t l.
   elim:l.
@@ -283,47 +302,38 @@ Proof.
   move => pair s ih.
 
   case:pair => i ui.
-  apply:if n_free ih
-  
-
-  move => l.
+  apply:substitute_one ih i ui.
 Defined.
 
-(* La définition suivante ne tient pas compte des variables libres de u, il faut encore la modifier *)
-
-Definition substitution : {f:DBT | is_function f} -> DBT -> DBT.
+Theorem substitute_nil: forall t:DBT, substitute t nil = t.
 Proof.
-  (* f=Fun t, calcul de (Fun t) u *)
-  move => f.
-  move => u.
-  case:f => f.
+  move => t.
+  simpl.
+  done.
+Qed.
+
+Definition pair_left: (nat*DBT) -> nat.
+Proof.
   move => p.
-  move/(_ f):function_arg => t.
-
-  move/(_ t 0 u):replace => h.
-  apply:h.
+  case:p => i t.
+  apply:i.
 Defined.
 
-Definition t2f : {f:DBT | is_function f}.
+Definition pair_right: (nat*DBT) -> DBT.
 Proof.
-  exists t2.
+  move => p.
+  case:p => i t.
+  apply:t.
+Defined.
+
+Theorem substitute_one_elem : forall t x:DBT, forall i:nat, substitute t ((i,x)::nil) = substitute_one t i x.
+Proof.
+  move => t x i.
+  simpl.
   done.
 Defined.
 
-Compute (substitution t2f t1).
-
-Definition element: {f:DBT | is_function f} -> DBT.
-Proof.
-  move => f.
-  case:f => f p.
-  apply:f.
-Defined.
-
-Theorem substitute_in_closed : forall f:{f:DBT | is_function f}, forall u:DBT, closed (element f) ->  substitution f u = (element f).
-Proof.
-  move => f u.
-  rewrite/element.
-
-Qed.
+Theorem substitute_rec : forall t x:DBT, forall s:(list (nat*DBT)), forall i:nat, n_free_list (list_from_list_of_pairs s) i -> substitute t ((i,x)::s) = substitute_one (substitute t s) i x.
+Admitted.
 
 End DeBruijnTerms.
