@@ -99,13 +99,23 @@ $$\begin{array}{rcl}
 On a ensuite montré que pour tout \verb|n|, \verb|n_free t n -> n_free t (n+1)| en démontrant tout d'abord cette propriété sur \verb|n_k_free|. La définition du prédicat ``Terme clos" peut alors simplement s'écrire \verb| closed t := n_free t 0|.
 \end{paragraph}
 \end{sous-partie}
-\begin{sous-partie}{Substitution dans un terme avec indices de De Bruijn}
+\begin{sous-partie}{Substitution dans un terme}
+\begin{sous-sous-partie}{Substitution unique}
 \begin{paragraph}{}
 On se donne un terme \verb|t|, un entier \verb|n| et un autre terme \verb|u|. On cherche à substituer \verb|u| à la variable \verb|Var n| dans \verb|t|, à chaque occurrence libre de \verb|n|.
 \end{paragraph}
-\begin{paragraph}
-Là encore, cette fonction 
+\begin{paragraph}{}
+Là encore, cette fonction est définie par induction sur \verb|t|. Les cas 1 et 3 sont simples à traiter :
 \end{paragraph}
+$$\begin{array}{rcl}
+\verb€substitute_one (Var x) n u €&=&\begin{array}[t]{|cl}
+\verb€ u€&\mbox{si }\verb|n=x|\\
+\verb€ Var x€&\mbox{sinon}
+\ea\\
+\verb€substitute_one (Appl t1 t2) n u €&=&\verb|Appl (substitute_one t1 n u)| \\
+&&\hspace{1.5cm}\verb|(substitute_one t2 n u)|\\
+\ea$$
+\end{sous-sous-partie}
 \end{sous-partie}
 
 \end{partie}
