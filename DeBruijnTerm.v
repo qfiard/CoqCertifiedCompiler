@@ -251,7 +251,7 @@ Proof.
   move => t1 ih1 t2 ih2 n u.
   apply:(Appl (ih1 n u) (ih2 n u)).
 Defined.
-(*
+
 Theorem substitute_in_closed : forall f:{f:DBT | is_function f}, forall u:DBT, closed (element f) ->  substitution f u = (element f).
 Proof.
   move => f u.
@@ -360,7 +360,6 @@ end.
   elim b.
 
 Defined.*)
-
 Inductive reduces_in_one_step : DBT -> DBT -> Prop :=
 | Lambda_reduction : forall t u, reduces_in_one_step (Appl (Fun t) u) (substitute_one t 0 u)
 | Rep_Lambda : forall t u, reduces_in_one_step t u ->reduces_in_one_step (Fun t) (Fun u)
@@ -408,7 +407,7 @@ Proof.
   move:h1 h3.
   by apply Forward.
 Qed.
-*)
+
 
 
 Inductive instruction :Type :=
