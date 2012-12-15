@@ -162,3 +162,97 @@
 {
 \end{subappendices}
 }
+
+% Permet de faire des cadres dans le document
+\newcommand{\cadre}[1]{\renewcommand{\arraystretch}{0.4}\begin{array}{!{\vline}c!{\vline}}\hline\\#1\\\\\hline\end{array}}
+\newcommand{\cadret}[1]{\renewcommand{\arraystretch}{0.4}\begin{tabular}{!{\vline}c!{\vline}}\hline\\#1\\\\\hline\end{tabular}}
+\newcommand{\semicadre}[1]{\renewcommand{\arraystretch}{0.3}\begin{array}{c!{\vline}}#1\\\\\hline\end{array}}
+
+% Commandes mathématiques
+
+\newcommand{\equivalent}[2]{\!\!\renewcommand{\arraystretch}{1}\begin{array}[t]{c}\Huge\sim\\^{#1\rightarrow#2}\end{array}\!\!}
+\newcommand{\tend}[2]{\!\renewcommand{\arraystretch}{1}\begin{array}[t]{c}-\!-\!\!\!\longrightarrow\\^{#1\rightarrow#2} \\ [-1.5ex]\end{array}\!}
+\newcommand{\egal}[2]{\!\!\renewcommand{\arraystretch}{1}\begin{array}[t]{c}=\\^{#1\rightarrow#2}\end{array}\!\!}
+\newcommand{\fin}{\vspace{0.2cm}\\}
+\newcommand{\finq}{\vspace{0.5cm}\\}
+\newcommand{\sh}{\mathrm{sh}\,}
+\newcommand{\abs}[1]{\left\vert#1\right\vert }
+\newcommand{\ch}{\mathrm{ch}\,}
+
+\renewcommand{\o}[1]{\mathrm{o}\!\left(#1\right)}
+\newcommand{\etoile}{\hspace*{1cm}$\star$\hspace*{0.5cm}}
+\renewcommand{\th}{\mathrm{th}\,}
+\renewcommand{\arcsin}{\mathrm{Arcsin}\,}
+\renewcommand{\arccos}{\mathrm{Arccos}\,}
+\newcommand{\argsh}{\mathrm{Argsh}\,}
+\newcommand{\argch}{\mathrm{Argch}\,}
+\newcommand{\argth}{\mathrm{Argth}\,}
+\newcommand{\rg}{\mathrm{rg}\,}
+\renewcommand{\arctan}{\mathrm{Arctan}\,}
+\newcommand{\sq}{\hspace*{1.4cm}\stepcounter{sq}(\alph{sq})\hspace*{0.5cm}}
+\newcommand{\rcl}{\begin{array}{rcl}}
+\newcommand{\ea}{\end{array}}
+\renewcommand{\tfrac}[2]{\textstyle\frac{#1}{#2}}
+\newcommand{\Cl}[1]{$C^{#1}$}
+\newcommand{\mathCl}[1]{C^{#1}}
+\renewcommand{\t}[1]{\tilde{#1}}
+\renewcommand{\l}{\lambda}
+\newcommand{\ds}{\displaystyle}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Ker}{\mathrm{Ker}\,}
+\newcommand{\Vect}{\mathrm{Vect}}
+\renewcommand{\lvert}{\left\vert}
+\renewcommand{\Im}{\mathrm{Im}\,}
+\renewcommand{\rvert}{\right\vert}
+\newcommand{\mnk}{\mathcal{M}_n(K)}
+\newcommand{\mnc}{\mathcal{M}_n(C)}
+\newcommand{\ppcm}{\mathrm{ppcm}}
+\newcommand{\Tr}{\mathrm{Tr}\,}
+\renewcommand{\t}[1]{^t\!#1}
+\newcommand{\scal}[2]{\left\langle #1|#2\right\rangle}
+\newcommand{\scalindice}[4]{\phantom{\langle}_{#3}\!\left\langle #1|#2\right\rangle_{#4}}
+\newcommand{\p}[1]{\left( #1 \right)}
+\newcommand{\crochet}[1]{\left[ #1 \right]}
+\newcommand{\nr}[1]{\left\|\,#1\,\right\|}
+\newcommand{\tab}{\hspace*{1cm}}
+
+\newcommand{\esp}[1]{\mathbb{E}\!\crochet{#1}}
+\newcommand{\espcond}[2]{\mathbb{E}_{#1}\!\crochet{#2}}
+
+\renewcommand{\P}[1]{\mathbb{P}\!\p{#1}}
+\newcommand{\Pcond}[2]{\mathbb{P}_{#1}\!\p{#2}}
+
+\renewcommand{\binom}[2]{\left(\begin{array}{c}#1\\#2\end{array}\right)}
+
+\newcommand{\car}[1]{\mathbf{1}_{#1}}
+
+\newcommand{\matdd}[4]{\left({\begin{array}{cc} #1 & #2\\ #3 & #4 \ea}\right)\vspace{0.05cm}}
+
+\newcommand{\supp}[1]{\text{supp}\left(#1\right)}
+
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\le}{\leqslant}
+
+\newcommand{\lebesgue}{\mathcal{L}}
+
+\newcommand{\Drond}{\mathcal{D}}
+
+\renewcommand{\Re}{\mathcal{R}e}
+\newcommand{\obs}[1]{\hat{#1}}
+\newcommand{\ket}[1]{\vert #1 \rangle}
+\newcommand{\bra}[1]{\langle #1 \vert}
+\newcommand{\braindice}[2]{\!\phantom{\langle}_{#2}\!\left\langle #1\right\vert}
+
+\newcommand{\prodscal}[2]{\left\langle#1,#2\right\rangle}
+
+\newcommand{\vect}[2]{\left(\str{1}\begin{array}{cc}#1 & #2 \ea\right)}
+\newcommand{\vecttrans}[2]{\left(\str{1}\begin{array}{c}#1 \\ #2 \ea\right)}
+
+\renewcommand{\v}[1]{\underline{#1}}
+
+\newcommand{\Dp}[2]{\dfrac{\partial #1}{\partial #2}}
+\newcommand{\grad}{\mathrm{grad}\,}
+\newcommand{\vgrad}{\v{\mathrm{grad}}\,}
