@@ -102,7 +102,7 @@ On a ensuite montré que pour tout \verb|n|, \verb|n_free t n -> n_free t (n+1)|
 \begin{sous-partie}{Substitution dans un terme}
 \begin{sous-sous-partie}{Substitution unique}
 \begin{paragraph}{}
-On se donne un terme \verb|t|, un entier \verb|n| et un autre terme \verb|u|. On cherche à substituer \verb|u| à la variable \verb|Var n| dans \verb|t|, à chaque occurrence libre de \verb|n|.
+On se donne un terme \verb|t|, un entier \verb|n| et un autre terme \verb|u|. On cherche à substituer \verb|u| à la variable \verb|n| dans \verb|t|, ce pour chaque occurrence libre de \verb|n|.
 \end{paragraph}
 \begin{paragraph}{}
 Là encore, cette fonction est définie par induction sur \verb|t|. Les cas 1 et 3 sont simples à traiter :
@@ -115,6 +115,30 @@ $$\begin{array}{rcl}
 \verb€substitute_one (Appl t1 t2) n u €&=&\verb|Appl (substitute_one t1 n u)| \\
 &&\hspace{1.5cm}\verb|(substitute_one t2 n u)|\\
 \ea$$
+\begin{paragraph}{}
+Le cas où \verb|t=Fun t1| est plus complexe à gérer. En effet, si 0 est une variable libre de \verb|u|, alors si on substitue directement \verb|u| à \verb|n| dans  \verb|t1|, on capture la variable libre 0 de \verb|u| par ce $\lambda$ additionnel. Pour préserver la liberté des variables libres de \verb|u|, une méthode consiste à augmenter de 1 la valeur de toutes les variables libres de \verb|u| avant la substitution. C'est la méthode que nous avons choisi d'utiliser.
+\end{paragraph}
+\begin{paragraph}{}
+On appelle \verb|shift| cette opération. Pour la définir, nous avons utilisé une fonction \verb|add_n_to_free| qui ajoute une constante \verb|n| à toutes les variables libres d'un terme, que l'on a définit par induction sur la taille des terme, de façon similaire à la définition de \verb|n_free| (on utilise une fonction auxiliaire où on fait une hypothèse supplémentaire sur les variables liées). On a alors :
+\end{paragraph}
+$$\verb€substitute_one (Fun t1) n u = Fun (substitute_one t1 n (shift u))€$$
+\begin{paragraph}{}
+Nous avons alors pu démontrer formellement grâce à Coq que toute substitution dans un terme fermé $t$ renvoie ce même terme.
+\end{paragraph}
+\end{sous-sous-partie}
+\begin{sous-sous-partie}{Substitution multiple}
+\begin{paragraph}{}
+On cherche maintenant à formaliser la substitution $t[i\leftarrow u_0\dots u_n]$, où $t, u_0, \dots, u_n$ sont des termes et $i, \dots, i+n-1$ des variables libres de $t$. Cette substitution est définie par récurrence en utilisant :
+$$t[i\leftarrow u_0\dots u_n] = (t[i\leftarrow u_0])[i+1\leftarrow u_1,\dots,u_n]$$
+Nous avons alors prouvé en utilisant Coq que :
+$$\begin{array}{rcl}
+t[] &=& t\\
+t[i\leftarrow u] &=& t\quad\mbox{si $t$ satisfait $C[i](t)$}
+\ea$$
+Nous n'avons à l'heure où nous écrivons ce rapport pas encore démontré que
+$$t[i\leftarrow u_0\dots u_n] = t[i\leftarrow u_0\dots u_n][i\leftarrow u_0] \quad\mbox{si $\forall k\le i, C[i](u_k)$}$$
+mais espérons le faire avant la présentation orale du mardi 18 décembre 2012.
+\end{paragraph}
 \end{sous-sous-partie}
 \end{sous-partie}
 
