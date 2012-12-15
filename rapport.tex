@@ -3,6 +3,8 @@
 \input{packages}
 \input{commandes}
 
+\usepackage{listings}
+
 \renewcommand{\thesection}{\Roman{section}}
 
 \input{entetes}
@@ -32,13 +34,89 @@
 
 \begin{intro}
 
-\begin{paragraph}{Description du projet\\}
-Ce projet consisté en la mise au point et la certification en Coq d'un compilateur pour un mini-language fonctionnel. Nous allons dans ce rapport présenter le language considéré, la machine abstraite de destination et le fonctionnement général du compilateur développé.
+\begin{paragraph}{Description du projet\vspace{0.2cm}\\}
+Ce projet consisté en la mise au point et la certification en Coq d'un compilateur pour un mini-langage fonctionnel. Nous allons dans ce rapport présenter le langage considéré, la machine abstraite de destination et le fonctionnement général du compilateur développé.
 \end{paragraph}
 
 \end{intro}
 
-\begin{partie}{Language étudié}
+\begin{partie}{Langage étudié}
+
+\begin{sous-partie}{Indices de De Bruijn et manipulation de $\lambda$-termes}
+
+\begin{paragraph}{}
+Le langage étudié est un modèle très simple des langages fonctionnels. Les termes de ce langage sont définis par la grammaire suivante :
+\end{paragraph}
+$$\begin{array}{rcll}
+t&::=&x&\mbox{variable}\\
+&|&\lambda\,x\cdot t&\mbox{fonction associant t à x}\\
+&|&t\;u&\mbox{application de la fonction t à u}
+\ea$$
+\begin{paragraph}{}
+Pour ôter l'indétermination lié à l'$\alpha$-équivalence de termes, l'énoncé propose d'utiliser les indices de De Bruijn : chaque variable liée est remplacée par un entier représentant le nombre de lieurs $\lambda$ la séparant de l'abstraction à laquelle elle est liée. Un exemple de terme de ce langage avec indices de Bruijn est par exemple $\lambda\cdot\lambda\cdot(0\;1)$, où le 1 est associé au $\lambda$ le plus externe.
+\end{paragraph}
+
+\end{sous-partie}
+
+\begin{sous-partie}{Formalisation en Coq}
+
+\begin{paragraph}{}
+Les termes avec indices de De Bruijn sont représentés par le type \verb|DBT| en Coq. Ce type est défini par l'inductif suivant :
+\end{paragraph}\vspace{-0.8cm}
+\begin{center}
+\begin{tabular}{p{5cm}}
+\begin{verbatim}
+Inductive DBT:Type :=| Var : nat -> DBT| Fun : DBT -> DBT| Appl : DBT -> DBT -> DBT.
+\end{verbatim}
+\end{tabular}
+\end{center}\vspace{-1cm}
+\begin{paragraph}{}
+Un terme de type \verb|Var x| représente une variable d'indice de De Bruijn $x\in\N$, \verb|Fun t| est la fonction qui a un terme $u$ associe le terme $t[0\leftarrow u]$, et \verb|Appl t1 t2| représente le terme $t1\;t2$, application de $t1$ à $t2$.
+\end{paragraph}
+
+\end{sous-partie}
+
+\begin{sous-partie}{Formalisation des termes clos sous forme d'un prédicat}
+
+\begin{paragraph}{}
+Comme suggéré dans l'énoncé, nous avons procédé en deux étapes pour définir le prédicat ``Terme clos" à partir de la définition précédente des termes avec indices de De Bruijn.
+\end{paragraph}
+\begin{paragraph}{}
+Nous avons commencé par formaliser le prédicat $C[n](t)$ suivant en Coq : pour tout $t$ terme avec indices de De Bruijn, $t$ satisfait $C[n](t)$ si et seulement si toutes les variables libres de $t$ sont d'indices $<n$. Ce prédicat est dénommé \verb|n_free t n| dans le code Coq (\verb|n_free t n = true| si et seulement si $C[n](t)$ est satisfait).
+\end{paragraph}
+\begin{paragraph}{}
+Pour calculer ce prédicat, on commence par définir un prédicat auxiliaire\\\verb|n_k_free : DBT -> nat -> nat|, tel que \verb|n_k_free t n k = true| si et seulement si
+toutes les variables libres de $t$ sont $<n$, en faisant l'hypothèse additionnelle que toutes les variables $<k$ sont liées. On a alors pour tout $t$ et $n$,
+$$\verb|n_free t n = n_k_free t n 0|$$
+et on peut facilement calculer \verb|n_k_free| inductivement sur $t$, en utilisant les relations suivantes :
+\end{paragraph}
+$$\begin{array}{rcl}
+\verb€n_k_free (Var x) n k €&=&\verb€ (x<n)||(x<k)€\\
+\verb€n_k_free (Fun t) n k €&=&\verb€ n_k_free t n (k+1)€\\
+\verb€n_k_free (Appl t1 t2) n k €&=&\verb€ (n_k_free t1 n k) && (n_k_free t2 n k)€
+\ea$$
+\begin{paragraph}{}
+On a ensuite montré que pour tout \verb|n|, \verb|n_free t n -> n_free t (n+1)| en démontrant tout d'abord cette propriété sur \verb|n_k_free|. La définition du prédicat ``Terme clos" peut alors simplement s'écrire \verb| closed t := n_free t 0|.
+\end{paragraph}
+\end{sous-partie}
+\begin{sous-partie}{Substitution dans un terme}
+\begin{sous-sous-partie}{Substitution unique}
+\begin{paragraph}{}
+On se donne un terme \verb|t|, un entier \verb|n| et un autre terme \verb|u|. On cherche à substituer \verb|u| à la variable \verb|Var n| dans \verb|t|, à chaque occurrence libre de \verb|n|.
+\end{paragraph}
+\begin{paragraph}{}
+Là encore, cette fonction est définie par induction sur \verb|t|. Les cas 1 et 3 sont simples à traiter :
+\end{paragraph}
+$$\begin{array}{rcl}
+\verb€substitute_one (Var x) n u €&=&\begin{array}[t]{|cl}
+\verb€ u€&\mbox{si }\verb|n=x|\\
+\verb€ Var x€&\mbox{sinon}
+\ea\\
+\verb€substitute_one (Appl t1 t2) n u €&=&\verb|Appl (substitute_one t1 n u)| \\
+&&\hspace{1.5cm}\verb|(substitute_one t2 n u)|\\
+\ea$$
+\end{sous-sous-partie}
+\end{sous-partie}
 
 \end{partie}
 
