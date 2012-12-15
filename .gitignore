@@ -5,3 +5,12 @@
 .\#*
 \#*
 *~
+
+*.log
+*.aux
+*.glo
+*.ist
+*.gz
+*.toc
+*.out
+*.pdf

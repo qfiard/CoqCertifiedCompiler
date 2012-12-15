@@ -1,0 +1,81 @@
+\pagestyle{fancy}
+
+\newlength{\headrulemargintop}
+\setlength{\headrulemargintop}{10.15mm}
+
+
+\newlength{\headbottommargin}
+
+\setlength{\headheight}{2cm}
+\setlength{\footskip}{2.65cm}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\setlength{\headsep}{6mm}
+\addtolength{\headrulemargintop}{-\headsep}
+\setlength{\headbottommargin}{\headsep}
+\addtolength{\headheight}{\headsep}
+\addtolength{\headsep}{-4mm}
+\addtolength{\headbottommargin}{-\headsep}
+
+\renewcommand{\headrule}{\vspace*{-\headrulemargintop}}
+\renewcommand{\headrule}{\vspace*{-\headrulemargintop}}
+
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ \MakeUppercase{#1}}}
+\renewcommand{\subsectionmark}[1]{\markright{\thesubsection\ \MakeUppercase{#1}}}
+
+\fancyhead{}
+\fancyfoot{}
+
+\definecolor{pantone}{rgb}{0.,0.26274509803922,0.37647058823529}
+
+\newlength{\logoskyline}
+\setlength{\logoskyline}{3cm}
+\newlength{\logoskylineleft}
+\setlength{\logoskylineleft}{16.965250619335cm}
+%\setlength{\logoskylineleft}{21cm}
+%\addtolength{\logoskylineleft}{-\logoskyline}
+%\addtolength{\logoskylineleft}{-6mm}
+
+\fancyhead[LO]{%
+\color{pantone}
+\small
+\str{0.9}
+\begin{tabular}{@{}l@{}}
+{\bf \fontspec{Gill Sans Light} INF551 - Raisonnement assisté par ordinateur}\\
+{\bf \fontspec{Gill Sans Light} Rapport de projet - Compilateur vérifié en Coq}
+\end{tabular}\\\vspace*{3.1mm}
+\str{0.9}\begin{tabular}{@{}l@{}}
+{\fontsize{10pt}{12pt}\selectfont \fontspec{Gill Sans Light} Dorian Nogneng}\\{\fontsize{10pt}{12pt}\selectfont \fontspec{Gill Sans Light}  Quentin Fiard}
+\end{tabular}
+\vspace*{\headbottommargin}
+\begin{textblock}{5}(12,8)
+\includegraphics[height=2.05cm]{./logo_x.eps}
+\end{textblock}
+\begin{textblock}{200}(34,19)
+\hrule width 130.2486772486772mm
+\end{textblock}}
+
+\fancyhead[LE]{%
+\color{pantone}
+\small
+\str{0.9}
+\begin{tabular}{@{}l@{}}
+{\bf \fontspec{Gill Sans Light} INF551 - Raisonnement assisté par ordinateur}\\
+{\bf \fontspec{Gill Sans Light} Rapport de projet - Compilateur vérifié en Coq}
+\end{tabular}\\\vspace*{3.1mm}
+\str{0.9}\begin{tabular}{@{}l@{}}
+{\fontsize{10pt}{12pt}\selectfont \fontspec{Gill Sans Light} Dorian Nogneng}\\{\fontsize{10pt}{12pt}\selectfont \fontspec{Gill Sans Light}  Quentin Fiard}
+\end{tabular}
+\vspace*{\headbottommargin}
+\begin{textblock}{5}(6,8)
+\includegraphics[height=2.05cm]{./logo_x.eps}
+\end{textblock}
+\begin{textblock}{200}(28,19)
+\hrule width 130.2486772486772mm
+\end{textblock}}
+
+\fancyfoot[L]{\fancyplain{}\rightmark}
+
+\fancyfoot[R]{\thepage\ / \pageref{LastPage}}
