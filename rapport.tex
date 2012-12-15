@@ -35,7 +35,7 @@
 \begin{intro}
 
 \begin{paragraph}{Description du projet\vspace{0.2cm}\\}
-Ce projet consisté en la mise au point et la certification en Coq d'un compilateur pour un mini-langage fonctionnel. Nous allons dans ce rapport présenter le langage considéré, la machine abstraite de destination et le fonctionnement général du compilateur développé.
+Ce projet consiste en la mise au point et la certification en Coq d'un compilateur pour un mini-langage fonctionnel. Nous allons dans ce rapport présenter le langage considéré, la machine abstraite de destination et le fonctionnement général du compilateur développé.
 \end{paragraph}
 
 \end{intro}
@@ -53,7 +53,7 @@ t&::=&x&\mbox{variable}\\
 &|&t\;u&\mbox{application de la fonction t à u}
 \ea$$
 \begin{paragraph}{}
-Pour ôter l'indétermination lié à l'$\alpha$-équivalence de termes, l'énoncé propose d'utiliser les indices de De Bruijn : chaque variable liée est remplacée par un entier représentant le nombre de lieurs $\lambda$ la séparant de l'abstraction à laquelle elle est liée. Un exemple de terme de ce langage avec indices de Bruijn est par exemple $\lambda\cdot\lambda\cdot(0\;1)$, où le 1 est associé au $\lambda$ le plus externe.
+Pour ôter l'indétermination liée à l'$\alpha$-équivalence de termes, l'énoncé propose d'utiliser les indices de De Bruijn : chaque variable liée est remplacée par un entier représentant le nombre de lieurs $\lambda$ la séparant de l'abstraction à laquelle elle est liée. Un exemple de terme de ce langage avec indices de Bruijn est par exemple $\lambda\cdot\lambda\cdot(0\;1)$, où le 1 est associé au $\lambda$ le plus externe.
 \end{paragraph}
 
 \end{sous-partie}
@@ -66,12 +66,15 @@ Les termes avec indices de De Bruijn sont représentés par le type \verb|DBT| e
 \begin{center}
 \begin{tabular}{p{5cm}}
 \begin{verbatim}
-Inductive DBT:Type :=| Var : nat -> DBT| Fun : DBT -> DBT| Appl : DBT -> DBT -> DBT.
+Inductive DBT:Type :=
+| Var : nat -> DBT
+| Fun : DBT -> DBT
+| Appl : DBT -> DBT -> DBT.
 \end{verbatim}
 \end{tabular}
 \end{center}\vspace{-1cm}
 \begin{paragraph}{}
-Un terme de type \verb|Var x| représente une variable d'indice de De Bruijn $x\in\N$, \verb|Fun t| est la fonction qui a un terme $u$ associe le terme $t[0\leftarrow u]$, et \verb|Appl t1 t2| représente le terme $t1\;t2$, application de $t1$ à $t2$.
+Un terme de type \verb|Var x| représente une variable d'indice de De Bruijn $x\in\N$, \verb|Fun t| est la fonction qui à un terme $u$ associe le terme $t[0\leftarrow u]$, et \verb|Appl t1 t2| représente le terme $t1\;t2$, application de $t1$ à $t2$.
 \end{paragraph}
 
 \end{sous-partie}
@@ -144,9 +147,71 @@ mais espérons le faire avant la présentation orale du mardi 18 décembre 2012.
 
 \end{partie}
 
+\begin{partie}{Machine, execution}
+
+\begin{sous-partie}{$\beta$-réduction des $\lambda$-termes}
+
+\begin{paragraph}{}
+Pour formaliser la notion de $\beta$-réductibilité d'un $\lambda$-terme en un autre, on définit d'abord la réductibilité en une étape :\\la propriété \verb|reduces_in_one_step a b| est vraie ssi a se réduit en b en une étape de réduction.\\
+On a :
+\end{paragraph}
+$$\begin{array}{rcl}
+\verb|reduces_in_one_step ($\lambda$ t u) (t[0<-u])|\\
+\verb|reduces_in_one_step t u =>|\\
+\verb|_ reduces_in_one_step (t v) (u v)|\\
+\verb|_ reduces_in_one_step (v t) (v u)|\\
+\verb|_ reduces_in_one_step ($\lambda$ t) ($\lambda$ u)|\\
+\ea$$
+\begin{paragraph}{}
+Ensuite on définit par induction la propriété générale de $\beta$-réductibilité :\\
+\verb|reduces_in_few_steps a b| est vraie ssi a se réduit en b en un nombre fini de réductions.\\
+On a :
+\end{paragraph}
+$$\begin{array}{rcl}
+\verb|reduces_in_few_steps t t|\\
+\verb|reduces_in_few_steps t u && reduces_in_one_step u v =>|\\
+\verb|reduces_in_few_steps t v|\\
+\ea$$
+\begin{paragraph}{}
+Ensuite on montre que les propriété de clôture par contexte se propagent à \verb|reduces_in_few_steps| par induction sur la propriété \verb|reduces_in_few_steps|.
+\end{paragraph}
+\end{sous-partie}
+\begin{sous-partie}{Machine abstraite de Krivine}
+\begin{paragraph}{}
+La machine abstraite de Krivine est un langage possédant 3 instructions :\\
+_ Access n : aller à l'élément numéro n de l'environnement\\
+_ Grab : prendre le sommet de la pile dans l'environnement\\
+_ Push c : rajouter le bloc d'instructions c dans la pile\\
+L'état d'une telle machine est alors caractérisé par la donnée d'un bloc d'instructions à exécuter, un environnement et une pile.\\
+\\
+Nous avons d'abord défini ces états en Caml :
+\end{paragraph}
+$$\begin{array}{rcl}
+\verb|type instruction = Access of int| Grab |Push of code
+and code == instruction list;;(*instruction list*)|\\
+\verb|type environment = Empty | Node of (code*environment) list;;|\\
+\verb|type stack == environment;;|\\
+\verb|type state = {mutable c:code;mutable e:environment;mutable s:stack};;|\\
+\ea$$
+\begin{paragraph}{}
+Puis nous avons écrit une fonction récursive \verb|execute|, exécutant la machine jusqu'à la fin des instructions.\\
+\end{paragraph}
+\begin{paragraph}{}
+En coq, nous avons écrit une fonction \verb|execute_one| qui exécute une étape de la machine de Krivine.\\
+Ensuite nous avons écrit la fonction de compilation, qui traduit un terme en écriture de De Bruijn en un code de machine de Krivine, par induction sur le terme.
+\end{paragraph}
+\end{sous-partie}
+\end{partie}
+
 \glsaddall
 \printglossary[title={Glossaire\markright{GLOSSAIRE}}]
 \addcontentsline{toc}{section}{Glossaire}
+\begin{conclusion}
 
+\begin{paragraph}{}
+Nous avons implémenté dans ce projet un compilateur traduisant le $\lambda$_calcul en langage machine de Krivine.
+\end{paragraph}
+
+\end{conclusion}
 
 \end{document}

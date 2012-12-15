@@ -360,7 +360,6 @@ end.
   elim b.
 
 Defined.*)
-
 Inductive reduces_in_one_step : DBT -> DBT -> Prop :=
 | Lambda_reduction : forall t u, reduces_in_one_step (Appl (Fun t) u) (substitute_one t 0 u)
 | Rep_Lambda : forall t u, reduces_in_one_step t u ->reduces_in_one_step (Fun t) (Fun u)
@@ -408,3 +407,144 @@ Proof.
   move:h1 h3.
   by apply Forward.
 Qed.
+
+
+
+Inductive instruction :Type :=
+| Access : nat->instruction
+| Grab : instruction
+| Push : list instruction->instruction.
+
+Definition code :Type :=
+list instruction.
+
+Inductive environment:Type :=
+Node :list (code*environment)->environment.
+
+Definition stack :Type :=
+environment.
+
+Inductive state:Type :=
+| None : state
+| State : code->environment->stack->state.
+
+Definition execute_one:state->state.
+Proof.
+move=>st.
+case st.
+(*st:None*)
+apply None.
+(*st:State c e s*)
+move=>c e s.
+case c.
+(**c:empty list*)
+apply None.
+(**c:hdc::tlc*)
+move=>hdc tlc.
+case hdc.
+(***hdc:Access n*)
+move=>n.
+case e.
+move=>le.
+case le.
+(****le:empty list*)
+apply None.
+(****le:hdle::tlle*)
+move=>hdle tlle.
+case n.
+(*****n:0*)
+case hdle.
+move=>fsthdle sndhdle.
+apply (State fsthdle sndhdle s).
+(*****n!=0*)
+move=>nn.
+apply (State ((Access (nn-1))::tlc) (Node tlle) s).
+(***hdc:Grab*)
+case s.
+move=>ls.
+case ls.
+(****ls:empty list*)
+apply None.
+(****ls:hdls::tlls*)
+move=>hdls tlls.
+case e.
+move=>le.
+apply (State tlc (Node (hdls::le)) (Node tlls)).
+(***hdc:Push li*)
+move=>li.
+case s.
+move=>ls.
+apply (State tlc e (Node ((li,e)::ls))).
+Qed.
+
+Definition compile : DBT -> code.
+Proof.
+  move => t.
+  elim:t.
+
+  (* Variable *)
+  move => x.
+  apply:((Access x)::nil).
+
+  (* Fonction *)
+  move => t ih.
+  apply:(Grab::ih).
+
+  (* Application *)
+  move => t iht u ihu.
+  apply:((Push ihu)::iht).
+Defined.
+
+Definition execute :state->state.
+Proof.
+  move => s.
+  case:s.
+  apply None.
+  move => c e s.
+  case : c.
+  apply : (State nil e s).
+  move=>hdc tlc.
+  (*cas : Access n*)
+  case : hdc.
+  move => n.
+  elim n.
+  (**cas : n=0*)
+  case e.
+move=>le.
+case le.
+apply None.
+move=>z tlle.
+case z.
+move=>z1 z2.
+elim (State z1 z2 s).
+(***cas : None*)
+apply None.
+move=>
+
+apply None.
+move=>z tlle.
+case z.
+move=>z1 z2 hi.
+apply 
+  case : e.
+  move=>le.
+  case : le.
+  apply None.
+  move=>z tlle.
+  case z.
+  move=>z1 z2.
+  apply : (execute (State z1 z2 s)).
+
+st.c <- fst(hd(env_list(st.e)));
+st.e <- snd(hd(env_list(st.e)));
+execute st;
+
+  match hdc with
+  |Access n=>apply State nil e s
+  |Grab=>apply State nil e s
+  |Push=>apply State nil e s
+
+move/(_ c e s  ).
+move=>st.
+rewrite/(_ state->u).
+st.
