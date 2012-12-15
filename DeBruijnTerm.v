@@ -419,17 +419,82 @@ Inductive instruction :Type :=
 Definition code :Type :=
 list instruction.
 
-Definition stack :Type :=
-code.
-
 Inductive environment:Type :=
 Node :list (code*environment)->environment.
+
+Definition stack :Type :=
+environment.
 
 Inductive state:Type :=
 | None : state
 | State : code->environment->stack->state.
 
-Definition 
+Definition execute_one:state->state.
+Proof.
+move=>st.
+case st.
+(*st:None*)
+apply None.
+(*st:State c e s*)
+move=>c e s.
+case c.
+(**c:empty list*)
+apply None.
+(**c:hdc::tlc*)
+move=>hdc tlc.
+case hdc.
+(***hdc:Access n*)
+move=>n.
+case e.
+move=>le.
+case le.
+(****le:empty list*)
+apply None.
+(****le:hdle::tlle*)
+move=>hdle tlle.
+case n.
+(*****n:0*)
+case hdle.
+move=>fsthdle sndhdle.
+apply (State fsthdle sndhdle s).
+(*****n!=0*)
+move=>nn.
+apply (State ((Access (nn-1))::tlc) (Node tlle) s).
+(***hdc:Grab*)
+case s.
+move=>ls.
+case ls.
+(****ls:empty list*)
+apply None.
+(****ls:hdls::tlls*)
+move=>hdls tlls.
+case e.
+move=>le.
+apply (State tlc (Node (hdls::le)) (Node tlls)).
+(***hdc:Push li*)
+move=>li.
+case s.
+move=>ls.
+apply (State tlc e (Node ((li,e)::ls))).
+Qed.
+
+Definition compile : DBT -> code.
+Proof.
+  move => t.
+  elim:t.
+
+  (* Variable *)
+  move => x.
+  apply:((Access x)::nil).
+
+  (* Fonction *)
+  move => t ih.
+  apply:(Grab::ih).
+
+  (* Application *)
+  move => t iht u ihu.
+  apply:((Push ihu)::iht).
+Defined.
 
 Definition execute :state->state.
 Proof.
