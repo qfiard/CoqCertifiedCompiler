@@ -251,7 +251,7 @@ Proof.
   move => t1 ih1 t2 ih2 n u.
   apply:(Appl (ih1 n u) (ih2 n u)).
 Defined.
-
+(*
 Theorem substitute_in_closed : forall f:{f:DBT | is_function f}, forall u:DBT, closed (element f) ->  substitution f u = (element f).
 Proof.
   move => f u.
@@ -408,3 +408,79 @@ Proof.
   move:h1 h3.
   by apply Forward.
 Qed.
+*)
+
+
+Inductive instruction :Type :=
+| Access : nat->instruction
+| Grab : instruction
+| Push : list instruction->instruction.
+
+Definition code :Type :=
+list instruction.
+
+Definition stack :Type :=
+code.
+
+Inductive environment:Type :=
+Node :list (code*environment)->environment.
+
+Inductive state:Type :=
+| None : state
+| State : code->environment->stack->state.
+
+Definition 
+
+Definition execute :state->state.
+Proof.
+  move => s.
+  case:s.
+  apply None.
+  move => c e s.
+  case : c.
+  apply : (State nil e s).
+  move=>hdc tlc.
+  (*cas : Access n*)
+  case : hdc.
+  move => n.
+  elim n.
+  (**cas : n=0*)
+  case e.
+move=>le.
+case le.
+apply None.
+move=>z tlle.
+case z.
+move=>z1 z2.
+elim (State z1 z2 s).
+(***cas : None*)
+apply None.
+move=>
+
+apply None.
+move=>z tlle.
+case z.
+move=>z1 z2 hi.
+apply 
+  case : e.
+  move=>le.
+  case : le.
+  apply None.
+  move=>z tlle.
+  case z.
+  move=>z1 z2.
+  apply : (execute (State z1 z2 s)).
+
+st.c <- fst(hd(env_list(st.e)));
+st.e <- snd(hd(env_list(st.e)));
+execute st;
+
+  match hdc with
+  |Access n=>apply State nil e s
+  |Grab=>apply State nil e s
+  |Push=>apply State nil e s
+
+move/(_ c e s  ).
+move=>st.
+rewrite/(_ state->u).
+st.
