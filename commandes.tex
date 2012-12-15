@@ -1,0 +1,164 @@
+\newcommand{\str}[1]{\renewcommand{\arraystretch}{#1}}
+
+\makeatletter
+\let\tobi@kept@section\section
+\RenewDocumentCommand{\section}{s}
+  {\IfBooleanTF{#1}{\tobi@kept@section*}{\tobi@section}}
+\NewDocumentCommand{\tobi@section}{o m o}
+  {\IfNoValueTF{#3}% No short title for the header
+     {\IfNoValueTF{#1}% No title for the toc
+        {\tobi@kept@section{#2}}
+        {\tobi@kept@section[#1]{#2}}%
+     }
+     {\IfNoValueTF{#1}% No title for the toc
+        {\tobi@kept@section[#2]{#2\sectionmark{#3}}\sectionmark{#3}}
+        {\tobi@kept@section[#1]{#2\sectionmark{#3}}\sectionmark{#3}}%
+    }%
+  }
+\makeatother
+
+
+\newcommand{\refbiblio}[1]{\cite{#1}}
+\newcommand{\norefbiblio}[1]{\nocite{#1}}
+
+\newcommand{\mymark}[1]{\markboth{\MakeUppercase{#1}}{\MakeUppercase{#1}}}
+
+
+
+\newenvironment{intro}
+{
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+\mymark{Introduction}
+}
+{
+
+}
+
+\newenvironment{remerciements}
+{
+\section*{Remerciements}
+\addcontentsline{toc}{section}{Remerciements}
+\mymark{Remerciements}
+}
+{
+
+}
+
+\newenvironment{conclusion}
+{
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+\mymark{Conclusion}
+}
+{
+
+}
+
+\newenvironment{resume}
+{
+\section*{Résumé}
+\addcontentsline{toc}{section}{Résumé}
+\mymark{Résumé}
+}
+{
+
+}
+
+
+\newenvironment{sous-partie}[1]
+{
+\subsection{#1}
+}
+{
+
+}
+
+\newenvironment{sous-sous-partie}[1]
+{
+\subsubsection{#1}
+}
+{
+
+}
+
+\newenvironment{liste}
+{
+\vspace{0.2cm}
+\begin{list}{$\bullet$\hspace{0.3cm}}{\leftmargin=1.4cm}
+}
+{
+\end{list}
+\vspace{0.2cm}
+}
+
+\newenvironment{oliste}
+{
+\vspace{0.2cm}
+\begin{enumerate}
+}
+{
+\end{enumerate}
+\vspace{0.2cm}
+}
+
+
+
+\newenvironment{partie}[1]
+{
+\section{#1}
+}
+{
+
+}
+
+\newcounter{numannexe}
+\newenvironment{annexes}
+{
+\newpage
+\thispagestyle{empty}
+\mbox{}
+\newpage
+\addcontentsline{toc}{section}{Annexes}
+\mymark{Annexes}
+\vspace*{\fill}
+\begin{center}
+\Huge{\textbf{Annexes}}
+\end{center}
+\vspace*{\fill}
+\newpage
+\setcounter{numannexe}{0}
+
+\renewenvironment{partie}[1]
+{
+	\refstepcounter{subsection}
+	\subsection*{\arabic{subsection}. ##1}
+}
+{
+}
+
+}
+{
+
+}
+
+\newenvironment{annexe}[1]
+{
+\setcounter{subsection}{0}
+\refstepcounter{numannexe}
+\addcontentsline{toc}{subsection}{Annexe \arabic{numannexe} : #1}
+\mymark{Annexe \arabic{numannexe} : #1}
+\section*{Annexe \arabic{numannexe} : #1}
+}
+{
+	\FloatBarrier
+}
+
+\newenvironment{sous-annexe}[1]
+{
+\begin{subappendices}
+\subsection{#1}
+}
+{
+\end{subappendices}
+}

@@ -1,0 +1,50 @@
+\documentclass[a4paper,twoside,12pt]{article}
+
+\input{packages}
+\input{commandes}
+
+\renewcommand{\thesection}{\Roman{section}}
+
+\input{entetes}
+
+\newcommand{\definition}[2]{{\bf #1} : #2}
+
+\makeglossaries
+
+\renewcommand{\glsnamefont}[1]{\makefirstuc{#1}}
+
+%\newglossaryentry{wattpic}
+%{
+%  name=watt-pic,
+%  description={Puissance nominale produite par un système photovoltaïque sous %l'illumination maximale du site considéré}
+%}
+
+\begin{document}
+%\includepdf{img/page0.pdf}
+
+\setcounter{page}{1}
+
+\clearpage
+
+\tableofcontents
+
+\clearpage
+
+\begin{intro}
+
+\begin{paragraph}{Description du projet\\}
+Ce projet consisté en la mise au point et la certification en Coq d'un compilateur pour un mini-language fonctionnel. Nous allons dans ce rapport présenter le language considéré, la machine abstraite de destination et le fonctionnement général du compilateur développé.
+\end{paragraph}
+
+\end{intro}
+
+\begin{partie}{Language étudié}
+
+\end{partie}
+
+\glsaddall
+\printglossary[title={Glossaire\markright{GLOSSAIRE}}]
+\addcontentsline{toc}{section}{Glossaire}
+
+
+\end{document}
