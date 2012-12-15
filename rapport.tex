@@ -147,71 +147,75 @@ mais espérons le faire avant la présentation orale du mardi 18 décembre 2012.
 
 \end{partie}
 
-\begin{partie}{Machine, execution}
+\begin{partie}{Machine abstraite, modèle d'exécution}
 
 \begin{sous-partie}{$\beta$-réduction des $\lambda$-termes}
 
 \begin{paragraph}{}
-Pour formaliser la notion de $\beta$-réductibilité d'un $\lambda$-terme en un autre, on définit d'abord la réductibilité en une étape :\\la propriété \verb|reduces_in_one_step a b| est vraie ssi a se réduit en b en une étape de réduction.\\
-On a :
+Pour formaliser la notion de $\beta$-réductibilité d'un $\lambda$-terme en un autre, on commence par définir la réductibilité en une étape : la propriété \verb|reduces_in_one_step a b| est vraie ssi a se réduit en b en une étape de réduction. On utilise alors les propriétés suivantes :
 \end{paragraph}
-$$\begin{array}{rcl}
-\verb|reduces_in_one_step ($\lambda$ t u) (t[0<-u])|\\
+$$\begin{array}{l}
+\verb|reduces_in_one_step (|\lambda\verb| t u) (t[0<-u])|\\
 \verb|reduces_in_one_step t u =>|\\
-\verb|_ reduces_in_one_step (t v) (u v)|\\
-\verb|_ reduces_in_one_step (v t) (v u)|\\
-\verb|_ reduces_in_one_step ($\lambda$ t) ($\lambda$ u)|\\
+\hspace{1cm}\bullet\hspace{0.5cm}\verb|reduces_in_one_step (t v) (u v)|\\
+\hspace{1cm}\bullet\hspace{0.5cm}\verb|reduces_in_one_step (v t) (v u)|\\
+\hspace{1cm}\bullet\hspace{0.5cm}\verb|reduces_in_one_step (|\lambda\verb| t) (|\lambda\verb| u)|
 \ea$$
 \begin{paragraph}{}
-Ensuite on définit par induction la propriété générale de $\beta$-réductibilité :\\
-\verb|reduces_in_few_steps a b| est vraie ssi a se réduit en b en un nombre fini de réductions.\\
-On a :
+On définit ensuite par induction la propriété générale de $\beta$-réductibilité :\\
+\verb|reduces_in_few_steps a b| est vraie ssi a se réduit en b en un nombre fini de réductions. On a alors les propriétés suivantes :
 \end{paragraph}
-$$\begin{array}{rcl}
-\verb|reduces_in_few_steps t t|\\
-\verb|reduces_in_few_steps t u && reduces_in_one_step u v =>|\\
-\verb|reduces_in_few_steps t v|\\
+$$\begin{array}{rl}
+\mbox{Réflexivité :}&\verb|reduces_in_few_steps t t|\\
+\mbox{Transitivité :}&\verb|reduces_in_few_steps t u && reduces_in_one_step u v =>|\\
+&\hspace{2cm}\verb|reduces_in_few_steps t v|\\
 \ea$$
 \begin{paragraph}{}
-Ensuite on montre que les propriété de clôture par contexte se propagent à \verb|reduces_in_few_steps| par induction sur la propriété \verb|reduces_in_few_steps|.
+Après avoir démontré ces propriétés en Coq, nous avons montré que les propriété de clôture par contexte se propagent à \verb|reduces_in_few_steps| par induction sur la propriété \verb|reduces_in_few_steps|.
 \end{paragraph}
 \end{sous-partie}
 \begin{sous-partie}{Machine abstraite de Krivine}
 \begin{paragraph}{}
-La machine abstraite de Krivine est un langage possédant 3 instructions :\\
-_ Access n : aller à l'élément numéro n de l'environnement\\
-_ Grab : prendre le sommet de la pile dans l'environnement\\
-_ Push c : rajouter le bloc d'instructions c dans la pile\\
-L'état d'une telle machine est alors caractérisé par la donnée d'un bloc d'instructions à exécuter, un environnement et une pile.\\
-\\
-Nous avons d'abord défini ces états en Caml :
+La machine abstraite de Krivine est un langage possédant 3 instructions :
 \end{paragraph}
-$$\begin{array}{rcl}
-\verb|type instruction = Access of int| Grab |Push of code
-and code == instruction list;;(*instruction list*)|\\
-\verb|type environment = Empty | Node of (code*environment) list;;|\\
+\begin{liste}
+\item\verb|Access n| : aller à l'élément numéro n de l'environnement
+\item\verb|Grab| : prendre le sommet de la pile dans l'environnement
+\item\verb|Push c| : rajouter le bloc d'instructions c dans la pile
+\end{liste}
+\begin{paragraph}{}
+L'état d'une telle machine est alors caractérisé par la donnée d'un bloc d'instructions à exécuter, un environnement et une pile.
+\end{paragraph}
+\begin{paragraph}{}
+Nous avons tout d'abord défini ces états en Caml :
+$$
+\begin{array}{l}
+\verb€type instruction = Access of int| Grab |Push of code€\\
+\verb€and code == instruction list;;(*instruction list*)€\\
+\verb€type environment = Empty | Node of (code*environment) list;;€\\
 \verb|type stack == environment;;|\\
-\verb|type state = {mutable c:code;mutable e:environment;mutable s:stack};;|\\
-\ea$$
-\begin{paragraph}{}
-Puis nous avons écrit une fonction récursive \verb|execute|, exécutant la machine jusqu'à la fin des instructions.\\
+\verb€type state = {mutable c:code;mutable e:environment;mutable s:stack};;€
+\ea
+$$
+avant d'écrire une fonction récursive \verb|execute|, simulant l'exécution de la machine jusqu'à la fin des instructions.
 \end{paragraph}
 \begin{paragraph}{}
-En coq, nous avons écrit une fonction \verb|execute_one| qui exécute une étape de la machine de Krivine.\\
-Ensuite nous avons écrit la fonction de compilation, qui traduit un terme en écriture de De Bruijn en un code de machine de Krivine, par induction sur le terme.
+En Coq, nous avons écrit une fonction \verb|execute_one| qui exécute une étape de la machine de Krivine, étant donné l'instruction actuelle (la terminaison de \verb|execute| n'est pas immédiate, et il est donc difficile de la définir récursivement en Coq, en utilisant des sous-parties strictes de l'état de la machine).
+\end{paragraph}
+\begin{paragraph}{}
+Nous avons ensuite écrit la fonction de compilation, qui traduit un terme en écriture de De Bruijn en un code de machine de Krivine, par induction sur les termes.
 \end{paragraph}
 \end{sous-partie}
 \end{partie}
 
+\begin{conclusion}
+\begin{paragraph}{}
+En conclusion, ce projet nous a permis d'implémenter un compilateur traduisant un modèle simple de $\lambda$-calcul en langage machine de Krivine. Nous n'avons au moment de l'écriture de ce rapport pas encore eu le temps d'étudier la certification du compilateur en tant que telle, mais espérons pouvoir le faire avant la date de la soutenance, afin de pouvoir mettre en valeur l'intérêt de Coq dans un tel cadre.
+\end{paragraph}
+\end{conclusion}
+
 \glsaddall
 \printglossary[title={Glossaire\markright{GLOSSAIRE}}]
 \addcontentsline{toc}{section}{Glossaire}
-\begin{conclusion}
-
-\begin{paragraph}{}
-Nous avons implémenté dans ce projet un compilateur traduisant le $\lambda$_calcul en langage machine de Krivine.
-\end{paragraph}
-
-\end{conclusion}
 
 \end{document}
