@@ -626,11 +626,147 @@ Proof.
 Qed.
 
 
-(*
+
 Inductive instruction :Type :=
 | Access : nat->instruction
 | Grab : instruction
 | Push : list instruction->instruction.
+
+Definition code :Type :=
+list instruction.
+
+Inductive environment:Type :=
+Node :list (code*environment)->environment.
+
+Definition stack :Type :=
+environment.
+
+Inductive state:Type :=
+| None : state
+| State : code->environment->stack->state.
+
+Definition execute_one:state->state.
+Proof.
+move=>st.
+case st.
+(*st:None*)
+apply None.
+(*st:State c e s*)
+move=>c e s.
+case c.
+(**c:empty list*)
+apply None.
+(**c:hdc::tlc*)
+move=>hdc tlc.
+case hdc.
+(***hdc:Access n*)
+move=>n.
+case e.
+move=>le.
+case le.
+(****le:empty list*)
+apply None.
+(****le:hdle::tlle*)
+move=>hdle tlle.
+case n.
+(*****n:0*)
+case hdle.
+move=>fsthdle sndhdle.
+apply (State fsthdle sndhdle s).
+(*****n!=0*)
+move=>nn.
+apply (State ((Access (nn-1))::tlc) (Node tlle) s).
+(***hdc:Grab*)
+case s.
+move=>ls.
+case ls.
+(****ls:empty list*)
+apply None.
+(****ls:hdls::tlls*)
+move=>hdls tlls.
+case e.
+move=>le.
+apply (State tlc (Node (hdls::le)) (Node tlls)).
+(***hdc:Push li*)
+move=>li.
+case s.
+move=>ls.
+apply (State tlc e (Node ((li,e)::ls))).
+Qed.
+
+Definition compile : DBT -> code.
+Proof.
+  move => t.
+  elim:t.
+
+  (* Variable *)
+  move => x.
+  apply:((Access x)::nil).
+
+  (* Fonction *)
+  move => t ih.
+  apply:(Grab::ih).
+
+  (* Application *)
+  move => t iht u ihu.
+  apply:((Push ihu)::iht).
+Defined.
+
+(*
+
+Fixpoint Tau_code (c:code) : DBT :=
+  match c with
+    | nil => Var 0
+    | i::c1 =>
+      match i with
+        | Access n => Var n
+        | Grab => Fun (Tau_code c1)
+        | Push c2 => Appl (Tau_code c2) (Tau_code c1)
+      end
+  end.
+
+Definition Tau_code : code -> DBT.
+  Proof.
+  move=>c.
+  elim c.
+  (*empty code*)
+  apply (Var 0).
+  (*non empty code : hdc :: tlc*)
+  move=>hdc.
+  elim hdc.
+  
+
+  (*Access n*)
+  move=>n.
+  apply (Var n).
+  (*Grab*)
+  apply (Fun ih).
+  (*Push a c*)
+
+  
+Defined.
+
+Definition Tau : state -> DBT.
+  Proof.
+  move=>st.
+  case :st.
+
+  (*None*)
+  apply (Var 0).
+
+  (*State c e s*)
+  move=> c e s.
+  case c.
+  apply (Var 0).
+  move=>hdc tlc.
+  case hdc.
+  (**Access n*)
+  move=>n.
+  apply (Var n).
+  (**Grab*)
+  apply (Fun (Tau (State (tlc) e s))).
+Defined.
+
 *)
 
 Inductive Code :Type :=(*first Code : following part of the Code*)
@@ -638,112 +774,6 @@ Inductive Code :Type :=(*first Code : following part of the Code*)
 | CAccess : Code -> nat -> Code
 | CGrab : Code -> Code
 | CPush : Code -> Code -> Code.
-
-Inductive Environment:Type :=
-|ENone : Environment
-|Node : Environment->Code->Environment->Environment.
-
-Definition Stack :Type :=
-Environment.
-
-Inductive State:Type :=
-| None : State
-| state : Code->Environment->Stack->State.
-
-(*
-Fixpoint execute (St:State) : State.
-Proof.
-  case St.
-  apply None.
-  move=>C E S.
-  case C.
-  (*None*)
-  apply St.
-  (*CAccess tlC n*)
-  move=>tlC n.
-  case E.
-  move => lE.
-  case lE.
-  apply None.
-  move=>hdlE tllE.
-  case n.
-  case hdlE.
-  move=>fsthdlE sndhdlE.
-  apply (execute (state fsthdlE sndhdlE S)).
-  move=>nn.
-  apply (execute (state (CAccess tlC (nn-1)) (Node tllE) S)).
-  (*CGrab tlC*)
-  move=>tlC.
-  case S.
-  move=>lS.
-  case lS.
-  apply None.
-  move=>hdlS tllS.
-  case E.
-  move=>lE.
-  apply (execute (state tlC (Node (hdlS::lE)) (Node tllS))).
-  (*CPush C' tlC*)
-  move=> tlC C'.
-  case S.
-  move=>lS.
-  apply (execute (state tlC E (Node ((C',E)::lS)))).
-Defined.
-*)
-
-Definition Execute_one:State->State.
-Proof.
-move=>St.
-case St.
-(*St:None*)
-apply None.
-(*St:State c e s*)
-move=>C E S.
-case C.
-(**C:CNone*)
-apply St.
-(***hdC:Access n*)
-move=>tlC n.
-case E.
-(****E:ENone*)
-apply None.
-(****E:EE,CE;tlE*)
-move=>tlE CE EE.
-case n.
-(*****n:0*)
-apply (state CE EE S).
-(*****n!=0*)
-move=>nn.
-apply (state (CAccess tlC (nn-1)) tlE S).
-(***hdc:Grab*)
-move=>tlC.
-case S.
-(****lS:ENone*)
-apply None.
-(****lS:ES,CS;tlS*)
-move=>ES CS tlS.
-apply (state tlC (Node E CS ES) tlS).
-(***hdC:Push C'*)
-move=>tlC C'.
-apply (state tlC E (Node S C' E)).
-Qed.
-
-Definition Compile : DBT -> Code.
-Proof.
-  move => t.
-  elim:t.
-
-  (* Variable *)
-  move => n.
-  apply:(CAccess CNone n).
-
-  (* Fonction *)
-  move => t ih.
-  apply:(CGrab ih).
-
-  (* Application *)
-  move => t iht u ihu.
-  apply:(CPush ihu iht).
-Defined.
 
 Definition Tau_Code : Code-> DBT.
 Proof.
@@ -757,100 +787,6 @@ Proof.
   move=> tlC ih C' ih'.
   apply (Appl ih' ih).
 Defined.
-
-Compute Compile (Var 0).
-Compute Tau_Code (Compile (Var 0)).
-
-Compute Compile (Appl (Fun (Var 0)) (Var 0)).
-Compute Tau_Code (Compile (Appl (Fun (Var 0)) (Var 0))).
-
-Definition Tau_Environment : Environment->DBT->DBT.
-  Proof.
-  move=>E.
-  elim E.
-  (*E:ENone*)
-  move=>dbt.
-  apply dbt.
-  (*E:EE,CE;tlE*)
-  move=>tlE hi CE EE hi' dbt.
-  apply (hi (substitute_one dbt 0 (hi' (Tau_Code CE)))).
-Defined.
-
-Definition Tau_Stack : Stack -> DBT -> DBT.
-  Proof.
-  move=>S.
-  elim S.
-  (*S:ENone*)
-  move=>dbt.
-  apply dbt.
-  (*S:ES,CS;tlS*)
-  move=>tlS hi CS ES hi' dbt.
-  apply (Appl dbt (hi (Tau_Environment ES (Tau_Code CS)))).
-Defined.
-
-Definition Tau : State->DBT.
-  Proof.
-  move=>St.
-  case St.
-  apply (Var 0).
-  move=>C E S.
-  apply (Tau_Stack S (Tau_Environment E (Tau_Code C))).
-Defined.
-
-Definition Church_of_int : nat->DBT.
-Proof.
-  move=>n.
-  elim n.
-  apply (Var 0).
-  move=>nn dbt.
-  apply (Appl (Var 1) dbt).
-Defined.
-
-Definition int_of_Church : DBT->nat.
-Proof.
-  move=>dbt.
-  elim dbt.
-  move=>n.
-  apply 0.
-  move=>dbt1 ih.
-  apply ih.
-  move=>dbt1 ih dbt2 ih'.
-  apply (ih'+1).
-Defined.
-
-Definition Plus : int-> int-> State.
-  Proof.
-  move=>n m.
-  apply (Compile (Fun Fun (Appl(Appl (Fun (Fun n)) ())) (Var 0))).
-Defined.
-
-Compute (Church_of_int 3).
-
-
-(*
-Fixpoint Tau_Environment (E:Environment) :DBT->DBT.
-  Proof.
-  case E.
-  move=>lE.
-  case lE.
-  move=>dbt.
-  apply dbt.
-  move=>hdlE tllE dbt.
-  case hdlE.
-  move=>fsthdlE sndhdlE.
-  apply ((Tau_Environment (Node tllE)) (substitute_one dbt 0 (Tau_Environment sndhdlE (Tau_Code fsthdlE)))).
-Defined.
-*)
-
-Theorem reversibility : forall (d:DBT), Tau_Code(Compile d)=d.
-  move=>d.
-  elim d.
-  move=>n.
-  have p1:(Compile (Var
-  rewrite Compile.
-  
-Qed.
-
 
 (*
 Definition execute :state->state.
